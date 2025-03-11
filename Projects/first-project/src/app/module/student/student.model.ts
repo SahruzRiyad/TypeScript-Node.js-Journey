@@ -2,13 +2,15 @@ import { Schema, model } from 'mongoose';
 import validator from 'validator';
 
 import {
-  GuardianInfo,
-  LocalGuardian,
-  UserName,
-  Student,
+  TGuardianInfo,
+  TLocalGuardian,
+  TUserName,
+  TStudent,
+  StudentModel,
+  StudentMethods,
 } from './student.interface';
 
-const userNameSchema = new Schema<UserName>({
+const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     required: [true, 'First name is required'],
@@ -37,7 +39,7 @@ const userNameSchema = new Schema<UserName>({
   },
 });
 
-const guardianSchema = new Schema<GuardianInfo>({
+const guardianSchema = new Schema<TGuardianInfo>({
   fatherName: { type: String, required: true },
   fatherOccupation: { type: String, required: true },
   fatherContactNo: { type: String, required: true },
@@ -46,14 +48,14 @@ const guardianSchema = new Schema<GuardianInfo>({
   motherContactNo: { type: String },
 });
 
-const localGuardianSchema = new Schema<LocalGuardian>({
+const localGuardianSchema = new Schema<TLocalGuardian>({
   name: { type: String, required: true },
   occupation: { type: String, required: true },
   contactNo: { type: String, required: true },
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<Student>({
+const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
   id: {
     type: String,
     required: true,
@@ -73,14 +75,14 @@ const studentSchema = new Schema<Student>({
     required: true,
   },
   dateOfBirth: { type: String, require: true },
-  email: { 
-    type: String, 
-    required: true, 
+  email: {
+    type: String,
+    required: true,
     unique: true,
-    
+
     validate: {
       validator: (value: string) => validator.isEmail(value),
-      message: "Email: {VALUE} is not valid"
+      message: 'Email: {VALUE} is not valid',
     },
   },
   contanctNo: { type: String, required: true },
@@ -107,4 +109,9 @@ const studentSchema = new Schema<Student>({
   },
 });
 
-export const StudentModel = model<Student>('Student', studentSchema);
+
+studentSchema.methods.isUserExists = async function (id: string){
+  const existingStudent = await Student.findOne({ id });
+  return existingStudent;
+}
+export const Student = model<TStudent, StudentModel>('Student', studentSchema);
