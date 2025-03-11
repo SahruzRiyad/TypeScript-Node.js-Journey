@@ -13,8 +13,8 @@ export type GuardianInfo = {
   fatherOccupation: string;
   fatherContactNo: string;
   motherName: string;
-  motherOccupation: string;
-  motherContactNo: string;
+  motherOccupation?: string;
+  motherContactNo?: string;
 };
 
 export type UserName = {
@@ -33,8 +33,8 @@ export type LocalGuardian = {
 export type Student = {
   id: string;
   name: UserName;
-  gender: 'male' | 'female';
-  dateOfBirth: 'string';
+  gender: 'Male' | 'Female' | 'Others';
+  dateOfBirth: string;
   email: string;
   contanctNo: string;
   emergencyContanctNo: string;

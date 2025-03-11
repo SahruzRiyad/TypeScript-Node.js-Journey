@@ -1,5 +1,6 @@
 import { StudentService } from './student.service';
 import { Request, Response } from 'express';
+// import studentValidationSchema from './student.validation';
 import studentValidationSchema from './student.validation';
 
 const createStudent = async (req: Request, res: Response) => {
@@ -8,19 +9,24 @@ const createStudent = async (req: Request, res: Response) => {
     
     const studentData = req.body.student;
 
+    // calling schema for validation zod
+    const zodParseData = studentValidationSchema.parse(studentData)
+
     // calling joi validation
-    const {error,value} = studentValidationSchema.validate(studentData)
+    // const {error,value} = studentValidationSchema.validate(studentData)
+
+
     
-    if(error){
-      // send response
-      res.status(500).json({
-        success: false,
-        message: 'Validation error!',
-        error: error.details,
-      });
-    }
+    // if(error){
+    //   // send response
+    //   res.status(500).json({
+    //     success: false,
+    //     message: 'Validation error!',
+    //     error: error.details,
+    //   });
+    // }
     // will call servic function to send this data
-    const result = await StudentService.createStudentIntoDB(value);
+    const result = await StudentService.createStudentIntoDB(zodParseData);
 
     // send response
     res.status(200).json({
