@@ -58,107 +58,119 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<TStudent, StudentModel>({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    maxlength: [20, 'Passoword cannot be more than 20 characters long'],
-  },
-  name: {
-    type: userNameSchema,
-    required: true,
-  },
-  gender: {
-    type: String,
-    enum: {
-      values: ['Male', 'Female', 'Others'],
-      message:
-        '{VALUE} is not supported. Only Male, Female and Others are allowed.',
+const studentSchema = new Schema<TStudent, StudentModel>(
+  {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
     },
-    required: true,
-  },
-  dateOfBirth: { type: String, require: true },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
+    password: {
+      type: String,
+      required: true,
+      maxlength: [20, 'Passoword cannot be more than 20 characters long'],
+    },
+    name: {
+      type: userNameSchema,
+      required: true,
+    },
+    gender: {
+      type: String,
+      enum: {
+        values: ['Male', 'Female', 'Others'],
+        message:
+          '{VALUE} is not supported. Only Male, Female and Others are allowed.',
+      },
+      required: true,
+    },
+    dateOfBirth: { type: String, require: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
 
-    validate: {
-      validator: (value: string) => validator.isEmail(value),
-      message: 'Email: {VALUE} is not valid',
+      validate: {
+        validator: (value: string) => validator.isEmail(value),
+        message: 'Email: {VALUE} is not valid',
+      },
+    },
+    contanctNo: { type: String, required: true },
+    emergencyContanctNo: { type: String, required: true },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    },
+    presentAddress: { type: String, required: true },
+    peremanentAddress: { type: String },
+    guardian: {
+      type: guardianSchema,
+      required: true,
+    },
+    localGuardian: {
+      type: localGuardianSchema,
+      required: true,
+    },
+    profileImg: { type: String },
+    isActive: {
+      type: String,
+      enum: ['active', 'inActive'],
+      default: 'active',
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
-  contanctNo: { type: String, required: true },
-  emergencyContanctNo: { type: String, required: true },
-  bloodGroup: {
-    type: String,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  {
+    toJSON: {
+      virtuals: true,
+    },
   },
-  presentAddress: { type: String, required: true },
-  peremanentAddress: { type: String },
-  guardian: {
-    type: guardianSchema,
-    required: true,
-  },
-  localGuardian: {
-    type: localGuardianSchema,
-    required: true,
-  },
-  profileImg: { type: String },
-  isActive: {
-    type: String,
-    enum: ['active', 'inActive'],
-    default: 'active',
-  },
-  isDeleted: {
-    type: Boolean,
-    default: false,
-  },
-});
+);
 
 // pre save mongoose middleware / hook
-studentSchema.pre('save', async function(next){
+studentSchema.pre('save', async function (next) {
   // console.log(this, 'pre hook middleware  to save data'
   this.password = await bcrypt.hash(
     this.password,
-    Number(config.bcrypt_salt_rounds)
+    Number(config.bcrypt_salt_rounds),
   );
 
   next();
-})
+});
 
 // post save mongoose middleware / hook
-studentSchema.post('save',function(doc,next){
-  doc.password = "";
-  next()
-})
+studentSchema.post('save', function (doc, next) {
+  doc.password = '';
+  next();
+});
 
 // Query Middleware
-studentSchema.pre('find', function(next){
-  this.find({ isDeleted: {$ne: true} })
-  next()
-})
+studentSchema.pre('find', function (next) {
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
 
-studentSchema.pre('findOne', function(next){
-  this.findOne({ isDeleted: {$ne: true} })
-  next()
-})
+studentSchema.pre('findOne', function (next) {
+  this.findOne({ isDeleted: { $ne: true } });
+  next();
+});
 
-studentSchema.pre('aggregate', function(next){
-  this.pipeline().unshift({ $match: {isDeleted: {$ne: true }} })
-  next()
-})
+studentSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
+  next();
+});
 
-// Creating custom statinc method
-studentSchema.statics.isUserExists = async function(id: string){
-  const existingStudent = await Student.findOne({id})
+// Mongoose Virtual
+studentSchema.virtual('fullName').get(function () {
+  return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
+});
+
+// Creating custom statin method
+studentSchema.statics.isUserExists = async function (id: string) {
+  const existingStudent = await Student.findOne({ id });
   return existingStudent;
-}
+};
 
 // Creating custom instance method
 // studentSchema.methods.isUserExists = async function (id: string){
