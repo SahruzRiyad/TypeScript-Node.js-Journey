@@ -30,6 +30,7 @@ const localGuardianValidationSchema = z.object({
 
 const studentValidationSchema = z.object({
   id: z.string().nonempty(),
+  password: z.string().nonempty().max(20,{ message: 'Cannot be more than 20 characters'}),
   name: userNameValidationSchema,
   gender: z.enum(['Male', 'Female', 'Others'], {
     errorMap: () => ({ message: 'Only Male, Female, and Others are allowed.' })

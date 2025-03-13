@@ -10,6 +10,9 @@ import {
   // StudentMethods,
 } from './student.interface';
 
+import bcrypt from 'bcrypt';
+import config from '../../config';
+
 const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
@@ -61,6 +64,11 @@ const studentSchema = new Schema<TStudent, StudentModel>({
     required: true,
     unique: true,
   },
+  password: {
+    type: String,
+    required: true,
+    maxlength: [20, 'Passoword cannot be more than 20 characters long'],
+  },
   name: {
     type: userNameSchema,
     required: true,
@@ -108,6 +116,24 @@ const studentSchema = new Schema<TStudent, StudentModel>({
     default: 'active',
   },
 });
+
+// pre save mongoose middleware / hook
+studentSchema.pre('save', async function(next){
+  // console.log(this, 'pre hook middleware  to save data'
+  this.password = await bcrypt.hash(
+    this.password,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  next();
+})
+
+// post save mongoose middleware / hook
+studentSchema.post('save',function(){
+  console.log(this, 'post hook: we saved our data')
+})
+
+
 
 // Creating custom statinc method
 studentSchema.statics.isUserExists = async function(id: string){
