@@ -115,6 +115,10 @@ const studentSchema = new Schema<TStudent, StudentModel>({
     enum: ['active', 'inActive'],
     default: 'active',
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // pre save mongoose middleware / hook
@@ -129,11 +133,26 @@ studentSchema.pre('save', async function(next){
 })
 
 // post save mongoose middleware / hook
-studentSchema.post('save',function(){
-  console.log(this, 'post hook: we saved our data')
+studentSchema.post('save',function(doc,next){
+  doc.password = "";
+  next()
 })
 
+// Query Middleware
+studentSchema.pre('find', function(next){
+  this.find({ isDeleted: {$ne: true} })
+  next()
+})
 
+studentSchema.pre('findOne', function(next){
+  this.findOne({ isDeleted: {$ne: true} })
+  next()
+})
+
+studentSchema.pre('aggregate', function(next){
+  this.pipeline().unshift({ $match: {isDeleted: {$ne: true }} })
+  next()
+})
 
 // Creating custom statinc method
 studentSchema.statics.isUserExists = async function(id: string){
