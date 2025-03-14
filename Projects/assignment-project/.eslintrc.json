@@ -1,0 +1,12 @@
+{
+    "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+    "rules": {
+      // Add custom rules here
+        "no-var": "error",
+        "no-unused-expressions": "error",
+        "no-undef": "error",
+        "no-console": "warn",
+        "prefer-const": "error"
+    },
+    "ignores": ["node_modules/*", "dist/*"]
+  }
